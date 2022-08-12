@@ -4,8 +4,11 @@ package main
 //Importing Format package from GO library
 import (
 	"fmt"
-	"strconv"
+	"sync"
+	"time"
 )
+
+var wg = sync.WaitGroup{}
 
 var conferenceName = "Go Conference"
 
@@ -15,49 +18,55 @@ const totalTickets = 50
 var remainingTickets uint = 50
 
 // slice for all bookings
-var bookings = make([]map[string]string, 0)
+var bookings = make([]UserData, 0)
+
+type UserData struct {
+	firstName   string
+	lastName    string
+	email       string
+	userTickets uint
+}
 
 func main() {
+
 	greet()
-	for {
-		if remainingTickets == 0 {
-			fmt.Printf("We are out of tickets. Sorry!")
-			return
-		}
 
-		//taking user input
-		firstname, lastname, email, userTickets := takeUserInput()
-
-		isValid := validateInput(firstname, lastname, email, userTickets, remainingTickets)
-
-		if isValid {
-			bookTickets(firstname, lastname, email, userTickets)
-			printFirstNames()
-		} else {
-			continue
-		}
+	if remainingTickets == 0 {
+		fmt.Printf("We are out of tickets. Sorry!")
+		return
 	}
+
+	//taking user input
+	firstname, lastname, email, userTickets := takeUserInput()
+
+	isValid := validateInput(firstname, lastname, email, userTickets, remainingTickets)
+
+	if isValid {
+		bookTickets(firstname, lastname, email, userTickets)
+		wg.Add(1)
+		go printTicket(userTickets, firstname, lastname, email)
+	} else {
+		// continue
+	}
+
+	wg.Wait()
 
 }
 
 func printFirstNames() {
 	var firstNames []string
 	for _, booking := range bookings {
-		firstNames = append(firstNames, booking["firstName"])
+		firstNames = append(firstNames, booking.firstName)
 	}
 	fmt.Printf("All are bookings are %v\n", firstNames)
 }
 
 func bookTickets(firstname string, lastname string, email string, userTickets uint) {
 	//create an empty map
-	var user = make(map[string]string)
-	user["firstName"] = firstname
-	user["lastName"] = lastname
-	user["email"] = email
-	user["userTickets"] = strconv.Itoa(int(userTickets))
+	user := UserData{firstName: firstname, lastName: lastname, email: email, userTickets: userTickets}
 	remainingTickets -= userTickets
 	bookings = append(bookings, user)
-	fmt.Printf("User %v booked %v tickets\n", user["firstName"], userTickets)
+	fmt.Printf("User %v booked %v tickets\n", firstname, userTickets)
 	fmt.Printf("There are %v tickets left\n", remainingTickets)
 }
 
@@ -84,4 +93,13 @@ func takeUserInput() (string, string, string, uint) {
 	fmt.Printf("Enter number of tickets you want to book\n")
 	fmt.Scan(&userTickets)
 	return firstname, lastname, email, userTickets
+}
+
+func printTicket(userTickets uint, firstname string, lastname string, email string) {
+	time.Sleep(10 * time.Second)
+	var ticket = fmt.Sprintf("%v tickets booked by %v %v", userTickets, firstname, lastname)
+	fmt.Println("############################")
+	fmt.Printf("sending email:\n %v \n to email address %v\n", ticket, email)
+	fmt.Println("############################")
+	wg.Done()
 }
