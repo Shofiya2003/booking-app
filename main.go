@@ -100,6 +100,7 @@ func printTicket(userTickets uint, firstname string, lastname string, email stri
 	var ticket = fmt.Sprintf("%v tickets booked by %v %v", userTickets, firstname, lastname)
 	fmt.Println("############################")
 	fmt.Printf("sending email:\n %v \n to email address %v\n", ticket, email)
+	fmt.Printf("Hope to see you there!")
 	fmt.Println("############################")
 	wg.Done()
 }
