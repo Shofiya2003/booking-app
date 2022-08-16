@@ -61,7 +61,7 @@ func printFirstNames() {
 	fmt.Printf("All are bookings are %v\n", firstNames)
 }
 
-func bookTickets(firstname strin, lastname string, email string, userTickets uint) {
+func bookTickets(firstname string, lastname string, email string, userTickets uint) {
 	//create an empty map
 	user := UserData{firstName: firstname, lastName: lastname, email: email, userTickets: userTickets}
 	remainingTickets -= userTickets
